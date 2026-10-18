@@ -1,0 +1,45 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    background: #0c0c0c;
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-ink font-kanit text-white antialiased;
+    overflow-x: hidden;
+  }
+  section[id] {
+    scroll-margin-top: 4rem;
+  }
+  :focus-visible {
+    outline: 2px solid #b0b0b0;
+    outline-offset: 3px;
+  }
+  .on-light :focus-visible {
+    outline-color: #0c0c0c;
+  }
+  ::selection {
+    background: #ffffff;
+    color: #0c0c0c;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+}
+
+@layer utilities {
+  .heading-xl {
+    font-size: clamp(2.5rem, 7vw, 6.5rem);
+    line-height: 0.95;
+    letter-spacing: -0.03em;
+  }
+  .eyebrow {
+    @apply text-xs font-medium uppercase tracking-[0.25em];
+  }
+}
