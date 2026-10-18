@@ -43,3 +43,73 @@
     @apply text-xs font-medium uppercase tracking-[0.25em];
   }
 }
+
+/* Abstract hero glow */
+.hero-glow {
+  background: radial-gradient(
+    circle,
+    rgba(101, 133, 255, 0.13) 0%,
+    rgba(101, 133, 255, 0.045) 42%,
+    transparent 72%
+  );
+}
+
+/* Seamless, responsive marquee */
+.marquee {
+  overflow: hidden;
+  width: 100%;
+}
+
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marquee-scroll 32s linear infinite;
+  will-change: transform;
+}
+
+.marquee:hover .marquee-track {
+  animation-play-state: paused;
+}
+
+.marquee-group {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: clamp(1.5rem, 4vw, 4rem);
+  padding-right: clamp(1.5rem, 4vw, 4rem);
+}
+
+.marquee-item {
+  display: inline-flex;
+  align-items: center;
+  gap: clamp(1.5rem, 4vw, 4rem);
+  white-space: nowrap;
+  font-size: clamp(0.8rem, 1.5vw, 1rem);
+  font-weight: 600;
+  letter-spacing: 0.24em;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.marquee-dot {
+  color: #a3ff5f;
+  font-size: 1.2em;
+}
+
+@keyframes marquee-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.marquee-static {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track {
+    animation: none;
+  }
+}
