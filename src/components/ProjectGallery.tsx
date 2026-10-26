@@ -1,119 +1,248 @@
-import { useMemo, useState } from 'react'
-import { AnimatePresence } from 'framer-motion'
-import { Instagram } from 'lucide-react'
-import { DESIGN_FILTERS, DESIGN_WORKS, SOCIALS, WEB_PROJECTS, type DesignCategory } from '../data/site'
-import FadeIn from './FadeIn'
-import Lightbox from './Lightbox'
+import { useRef, type ReactNode } from 'react'
+import { motion, useScroll, useTransform } from 'framer-motion'
+import { ArrowDown, ArrowUpRight, Instagram } from 'lucide-react'
+import { DESIGN_WORKS, SOCIALS, WEB_PROJECTS, type DesignWork } from '../data/site'
 import ProjectCard from './ProjectCard'
 import SafeImage from './SafeImage'
 import SectionHeading from './SectionHeading'
 import { SecondaryButton } from './Buttons'
 
-// Large first row, then an even row of three: varied scale without chaos.
-const webSpans = [
-  'lg:col-span-7',
-  'lg:col-span-5',
-  'lg:col-span-4',
-  'lg:col-span-4',
-  'lg:col-span-4',
-]
+interface HorizontalShowcaseProps {
+  id: string
+  eyebrow: string
+  title: string
+  description: string
+  count: number
+  children: ReactNode
+}
 
-export default function ProjectGallery() {
-  const [filter, setFilter] = useState<'All' | DesignCategory>('All')
-  const [openIndex, setOpenIndex] = useState<number | null>(null)
+function HorizontalShowcase({
+  id,
+  eyebrow,
+  title,
+  description,
+  count,
+  children,
+}: HorizontalShowcaseProps) {
+  const sectionRef = useRef<HTMLElement>(null)
 
-  const visible = useMemo(
-    () => (filter === 'All' ? DESIGN_WORKS : DESIGN_WORKS.filter((w) => w.category === filter)),
-    [filter],
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ['start start', 'end end'],
+  })
+
+  const x = useTransform(
+    scrollYProgress,
+    [0, 1],
+    ['0vw', `-${Math.max(0, count - 1) * 100}vw`],
   )
-  const instagram = SOCIALS.find((s) => s.id === 'instagram')
 
   return (
-    <section id="projects" aria-labelledby="projects-title" className="on-light bg-paper py-24 text-ink sm:py-32">
-      <div className="mx-auto w-full max-w-[1800px] px-5 sm:px-8 lg:px-12">
-        <FadeIn>
-          <SectionHeading id="projects-title" eyebrow="Selected Projects" title="Work that communicates." tone="light" />
-        </FadeIn>
+    <section
+      id={id}
+      ref={sectionRef}
+      aria-label={title}
+      className="relative bg-paper text-ink"
+      style={{ height: `${count * 100}svh` }}
+    >
+      <div className="sticky top-0 h-[100svh] overflow-hidden">
+        <motion.div
+          style={{ x }}
+          className="flex h-full w-max will-change-transform"
+        >
+          {Array.from({ length: count }, (_, index) => (
+            <article
+              key={index}
+              className="flex h-[100svh] w-screen shrink-0 flex-col justify-center px-5 py-20 sm:px-10 lg:px-16"
+            >
+              <div className="mx-auto flex h-full w-full max-w-[1500px] flex-col justify-center">
+                <div className="mb-6 flex items-end justify-between gap-4 sm:mb-8">
+                  <div>
+                    <p className="eyebrow text-neutral-500">{eyebrow}</p>
+                    <h2 className="mt-2 text-3xl font-extrabold uppercase leading-none tracking-tight sm:text-5xl lg:text-6xl">
+                      {title}
+                    </h2>
+                    <p className="mt-3 max-w-xl text-sm text-neutral-600 sm:text-base">
+                      {description}
+                    </p>
+                  </div>
 
-        {/* Web development */}
-        <div className="mt-16 sm:mt-20">
-          <FadeIn>
-            <h3 className="eyebrow border-b border-ink/15 pb-4 text-neutral-600">Web Development</h3>
-          </FadeIn>
-          <div className="mt-10 grid grid-cols-1 gap-x-8 gap-y-14 md:grid-cols-2 lg:grid-cols-12">
-            {WEB_PROJECTS.map((project, i) => (
-              <FadeIn key={project.slug} delay={(i % 3) * 0.08} className={webSpans[i] ?? 'lg:col-span-4'}>
-                <ProjectCard project={project} className="h-full" />
-              </FadeIn>
-            ))}
+                  <span className="shrink-0 pb-1 text-xs font-semibold tracking-widest text-neutral-500 sm:text-sm">
+                    {String(index + 1).padStart(2, '0')} / {String(count).padStart(2, '0')}
+                  </span>
+                </div>
+
+                {/*
+                  Each slide occupies exactly one viewport width.
+                  Vertical page scrolling drives the horizontal movement.
+                */}
+                <div className="min-h-0 flex-1">
+                  {Array.isArray(children)
+                    ? children[index]
+                    : index === 0
+                      ? children
+                      : null}
+                </div>
+
+                <div className="mt-5 flex items-center justify-between border-t border-ink/15 pt-4">
+                  <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-neutral-500 sm:text-xs">
+                    Jerry · Selected Work
+                  </span>
+                  <span className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.15em] text-neutral-500 sm:text-xs">
+                    Scroll to explore <ArrowDown aria-hidden className="h-4 w-4" />
+                  </span>
+                </div>
+              </div>
+            </article>
+          ))}
+        </motion.div>
+      </div>
+    </section>
+  )
+}
+
+function WebProjects() {
+  return (
+    <HorizontalShowcase
+      id="projects"
+      eyebrow="01 / Digital"
+      title="Web Development"
+      description="Digital experiences designed to work beautifully and communicate clearly."
+      count={WEB_PROJECTS.length}
+    >
+      {WEB_PROJECTS.map((project) => (
+        <div
+          key={project.slug}
+          className="flex h-full min-h-0 items-center justify-center overflow-y-auto pb-1"
+        >
+          <div className="w-full max-w-5xl">
+            <ProjectCard project={project} />
           </div>
         </div>
+      ))}
+    </HorizontalShowcase>
+  )
+}
 
-        {/* Graphics design */}
-        <div className="mt-24 sm:mt-32">
-          <FadeIn>
-            <div className="flex flex-col gap-6 border-b border-ink/15 pb-4 sm:flex-row sm:items-end sm:justify-between">
-              <h3 className="eyebrow text-neutral-600">Graphics Design</h3>
-              <div role="group" aria-label="Filter graphics design work" className="flex flex-wrap gap-2">
-                {DESIGN_FILTERS.map((f) => (
-                  <button
-                    key={f}
-                    type="button"
-                    aria-pressed={filter === f}
-                    onClick={() => setFilter(f)}
-                    className={`min-h-11 rounded-lg border px-4 text-xs font-semibold uppercase tracking-[0.12em] transition-colors ${
-                      filter === f ? 'border-ink bg-ink text-white' : 'border-ink/25 text-ink hover:border-ink'
-                    }`}
-                  >
-                    {f}
-                  </button>
-                ))}
-              </div>
+function DesignSlides({
+  works,
+  eyebrow,
+  title,
+  description,
+  id,
+}: {
+  works: DesignWork[]
+  eyebrow: string
+  title: string
+  description: string
+  id: string
+}) {
+  return (
+    <HorizontalShowcase
+      id={id}
+      eyebrow={eyebrow}
+      title={title}
+      description={description}
+      count={works.length}
+    >
+      {works.map((work) => (
+        <div
+          key={work.id}
+          className="flex h-full min-h-0 flex-col items-center justify-center"
+        >
+          <div className="flex min-h-0 w-full flex-1 items-center justify-center overflow-hidden rounded-2xl border border-ink/10 bg-neutral-100 p-3 sm:p-5">
+            <SafeImage
+              src={work.src}
+              alt={work.alt}
+              width={work.width}
+              height={work.height}
+              eager={works.indexOf(work) === 0}
+              className="h-full w-full object-contain"
+            />
+          </div>
+
+          <div className="flex w-full items-start justify-between gap-4 py-4">
+            <div>
+              <h3 className="text-lg font-bold uppercase tracking-tight sm:text-2xl">
+                {work.title}
+              </h3>
+              <p className="mt-1 text-xs text-neutral-500 sm:text-sm">
+                {[work.brand, work.category].filter(Boolean).join(' · ')}
+              </p>
             </div>
-          </FadeIn>
 
-          <ul className="mt-10 columns-1 gap-6 sm:columns-2 lg:columns-3 xl:columns-4">
-            {visible.map((work, i) => (
-              <li key={work.id} className="mb-6 break-inside-avoid">
-                <button
-                  type="button"
-                  onClick={() => setOpenIndex(i)}
-                  aria-label={`View ${work.title}${work.brand ? `, ${work.brand}` : ''} full size`}
-                  className="group relative block w-full overflow-hidden rounded-2xl border border-ink/10 bg-neutral-100 text-left"
-                >
-                  <SafeImage
-                    src={work.src}
-                    alt={work.alt}
-                    width={work.width}
-                    height={work.height}
-                    className="h-auto w-full transition-transform duration-700 ease-out group-hover:scale-[1.03]"
-                  />
-                  <span className="pointer-events-none absolute inset-x-0 bottom-0 translate-y-2 bg-gradient-to-t from-ink/85 to-transparent p-4 pt-12 text-white opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:opacity-100">
-                    <span className="block text-sm font-semibold uppercase tracking-[0.12em]">{work.title}</span>
-                    <span className="block text-xs text-soft">
-                      {[work.brand, work.category].filter(Boolean).join(' · ')}
-                    </span>
-                  </span>
-                </button>
-              </li>
-            ))}
-          </ul>
+            <a
+              href={work.src}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`Open ${work.title} image in a new tab`}
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-ink text-white transition-transform hover:scale-105"
+            >
+              <ArrowUpRight aria-hidden className="h-5 w-5" />
+            </a>
+          </div>
+        </div>
+      ))}
+    </HorizontalShowcase>
+  )
+}
 
-          {instagram && (
-            <FadeIn className="mt-10 flex justify-center">
-              <SecondaryButton href={instagram.href} external tone="light">
-                <Instagram aria-hidden className="h-4 w-4" /> See more work on Instagram
-              </SecondaryButton>
-            </FadeIn>
-          )}
+export default function ProjectGallery() {
+  const logos = DESIGN_WORKS.filter(
+    (work) => work.category === 'Brand Identity',
+  )
+
+  const flyers = DESIGN_WORKS.filter(
+    (work) => work.category === 'Flyers & Promotional Design',
+  )
+
+  const instagram = SOCIALS.find((social) => social.id === 'instagram')
+
+  return (
+    <div className="on-light">
+      <div className="bg-paper px-5 pb-12 pt-24 text-ink sm:px-10 sm:pb-16 sm:pt-32 lg:px-16">
+        <div className="mx-auto max-w-[1500px]">
+          <p className="eyebrow text-neutral-500">Selected Projects</p>
+          <SectionHeading
+            id="projects-heading"
+            eyebrow="Selected Projects"
+            title="Work that communicates."
+            tone="light"
+          />
+          <p className="mt-5 max-w-xl text-base font-light leading-relaxed text-neutral-600 sm:text-lg">
+            A selection of websites, brand identities and graphics created to
+            make ideas stand out.
+          </p>
         </div>
       </div>
 
-      <AnimatePresence>
-        {openIndex !== null && visible[openIndex] && (
-          <Lightbox items={visible} index={openIndex} onClose={() => setOpenIndex(null)} onChange={setOpenIndex} />
-        )}
-      </AnimatePresence>
-    </section>
+      <WebProjects />
+
+      <DesignSlides
+        id="logo-design"
+        eyebrow="02 / Brand Identity"
+        title="Logo Design"
+        description="Distinctive marks and visual identities built to be remembered."
+        works={logos}
+      />
+
+      <DesignSlides
+        id="flyer-design"
+        eyebrow="03 / Graphic Design"
+        title="Flyer Design"
+        description="Promotional visuals that bring the message, details and personality together."
+        works={flyers}
+      />
+
+      {instagram && (
+        <div className="flex justify-center bg-paper px-5 py-12 sm:py-16">
+          <SecondaryButton href={instagram.href} external tone="light">
+            <Instagram aria-hidden className="h-4 w-4" />
+            See more work on Instagram
+            <ArrowUpRight aria-hidden className="h-4 w-4" />
+          </SecondaryButton>
+        </div>
+      )}
+    </div>
   )
 }
