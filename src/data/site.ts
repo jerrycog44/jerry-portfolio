@@ -60,14 +60,6 @@ export interface WebProject {
 
 export const WEB_PROJECTS: WebProject[] = [
   {
-    slug: 'orderflow',
-    name: 'OrderFlow',
-    category: 'Web Development',
-    description: 'A responsive landing page that presents the OrderFlow offering clearly.',
-    liveUrl: 'https://orderflowlp.vercel.app/',
-    image: '/projects/orderflow.jpg',
-  },
-  {
     slug: 'sharpwork',
     name: 'SharpWork',
     category: 'Web Development',
