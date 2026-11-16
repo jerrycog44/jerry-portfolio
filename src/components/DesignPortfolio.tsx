@@ -227,6 +227,58 @@ export default function DesignPortfolio() {
                   </p>
                 </div>
               )}
+
+              <div className="mt-20 border-t border-ink/10 pt-10 sm:mt-24 sm:pt-12">
+                <div className="mb-7 flex flex-col justify-between gap-2 sm:flex-row sm:items-end">
+                  <div>
+                    <p className="eyebrow text-neutral-500">KEEP EXPLORING</p>
+                    <h3 className="mt-2 text-2xl font-extrabold uppercase tracking-tight text-ink sm:text-3xl">
+                      Explore other collections<span className="text-neutral-400">.</span>
+                    </h3>
+                  </div>
+                  <p className="text-sm text-neutral-500">More of my graphic design work</p>
+                </div>
+
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  {collections
+                    .filter((folder) => folder.id !== selected.id)
+                    .map((folder) => (
+                      <motion.button
+                        key={folder.id}
+                        type="button"
+                        onClick={() => {
+                          setActive(folder.id)
+                          window.scrollTo({
+                            top: document.getElementById('design-projects')?.offsetTop ?? 0,
+                            behavior: 'smooth',
+                          })
+                        }}
+                        whileHover={{ y: -4 }}
+                        whileTap={{ scale: 0.99 }}
+                        className="group flex min-h-[150px] items-center gap-4 overflow-hidden rounded-2xl border border-white/10 bg-[#111111] p-4 text-left text-white transition-colors hover:border-white/30 sm:gap-5 sm:p-5"
+                      >
+                        <div className="w-[42%] max-w-[170px] shrink-0">
+                          <FolderVisual works={folder.works} />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/45">
+                            {folder.eyebrow}
+                          </p>
+                          <h4 className="mt-2 text-lg font-bold uppercase leading-tight tracking-tight sm:text-xl">
+                            {folder.title}
+                          </h4>
+                          <p className="mt-2 text-xs leading-relaxed text-white/55">
+                            {folder.description}
+                          </p>
+                          <span className="mt-4 inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.15em] text-white/65 transition-colors group-hover:text-white">
+                            Explore collection
+                            <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                          </span>
+                        </div>
+                      </motion.button>
+                    ))}
+                </div>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
